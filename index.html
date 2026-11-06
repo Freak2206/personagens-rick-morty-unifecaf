@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rick and Morty | Personagens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Rick and Morty</h1>
+    <p>Personagens em tempo real, direto da API</p>
+  </header>
+
+  <main>
+    <section class="controles">
+      <input type="search" id="busca" placeholder="Buscar personagem pelo nome...">
+      <select id="filtro-status">
+        <option value="">Todos os status</option>
+        <option value="alive">Vivo</option>
+        <option value="dead">Morto</option>
+        <option value="unknown">Desconhecido</option>
+      </select>
+      <button id="btn-favoritos" type="button">Ver favoritos</button>
+    </section>
+
+    <p id="mensagem" class="mensagem" role="status"></p>
+
+    <section id="cards" class="cards"></section>
+
+    <nav class="paginacao">
+      <button id="anterior" type="button">Anterior</button>
+      <span id="pagina-atual">Página 1</span>
+      <button id="proxima" type="button">Próxima</button>
+    </nav>
+  </main>
+
+  <footer class="rodape">
+    <p>Dados da <a href="https://rickandmortyapi.com/" target="_blank" rel="noopener">Rick and Morty API</a></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
