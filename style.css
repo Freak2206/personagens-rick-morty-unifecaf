@@ -137,3 +137,17 @@ main { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: 16px; }
   .card { padding: 12px; }
   .card h2 { font-size: 0.95rem; }
 }
+
+.mensagem .tentar {
+  font: inherit;
+  margin-left: 8px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 2px solid var(--verde);
+  background: var(--card);
+  color: var(--texto);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.mensagem .tentar:hover { background: var(--verde); color: var(--verde-escuro); }
