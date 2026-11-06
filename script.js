@@ -104,32 +104,82 @@ function mostrarCards(lista) {
 }
 
 // consumo da API com fetch
-function carregarPersonagens() {
+let controlador = null;
+let ultimaPaginaOk = 1;
+const cache = {};
+
+function esperar(ms) {
+  return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+// tenta de novo até 3 vezes se a rede falhar
+async function buscarComRetry(url, tentativas) {
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      const resposta = await fetch(url, { signal: controlador.signal });
+      if (resposta.status === 404) {
+        const e = new Error("Nenhum personagem encontrado.");
+        e.semResultado = true;
+        throw e;
+      }
+      if (!resposta.ok) throw new Error("Erro " + resposta.status);
+      return await resposta.json();
+    } catch (erro) {
+      if (erro.name === "AbortError" || erro.semResultado || i === tentativas - 1) throw erro;
+      await esperar(800 * (i + 1));
+    }
+  }
+}
+
+function mostrarErroRede() {
+  mensagem.textContent = "Não foi possível carregar os dados. ";
+  const botao = document.createElement("button");
+  botao.type = "button";
+  botao.textContent = "Tentar novamente";
+  botao.className = "tentar";
+  botao.addEventListener("click", carregarPersonagens);
+  mensagem.appendChild(botao);
+}
+
+async function carregarPersonagens() {
   mostrandoFavoritos = false;
   btnFavoritos.classList.remove("ativo");
-  mensagem.textContent = "Carregando...";
+
+  // cancela a requisição anterior para não misturar respostas
+  if (controlador) controlador.abort();
+  controlador = new AbortController();
 
   const params = new URLSearchParams({ page: paginaAtual });
   if (campoBusca.value.trim()) params.set("name", campoBusca.value.trim());
   if (filtroStatus.value) params.set("status", filtroStatus.value);
+  const url = URL_API + "?" + params.toString();
 
-  fetch(URL_API + "?" + params.toString())
-    .then(function (resposta) {
-      if (!resposta.ok) throw new Error("Nenhum personagem encontrado.");
-      return resposta.json();
-    })
-    .then(function (dados) {
-      totalPaginas = dados.info.pages;
-      mostrarCards(dados.results);
-      mensagem.textContent = dados.info.count + " personagens encontrados";
-      atualizarPaginacao();
-    })
-    .catch(function (erro) {
+  try {
+    let dados = cache[url];
+    if (!dados) {
+      mensagem.textContent = "Carregando...";
+      dados = await buscarComRetry(url, 3);
+      cache[url] = dados;
+    }
+    totalPaginas = dados.info.pages;
+    ultimaPaginaOk = paginaAtual;
+    mostrarCards(dados.results);
+    mensagem.textContent = dados.info.count + " personagens encontrados";
+  } catch (erro) {
+    if (erro.name === "AbortError") return;
+    if (erro.semResultado) {
       areaCards.innerHTML = "";
       totalPaginas = 1;
+      paginaAtual = 1;
+      ultimaPaginaOk = 1;
       mensagem.textContent = erro.message;
-      atualizarPaginacao();
-    });
+    } else {
+      // erro de rede: volta para a última página que funcionou
+      paginaAtual = ultimaPaginaOk;
+      mostrarErroRede();
+    }
+  }
+  atualizarPaginacao();
 }
 
 function mostrarFavoritos() {
